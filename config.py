@@ -32,7 +32,7 @@ LISTEN_PORT = 2222
 # SECRET_KEY = None
 
 # 设置日志级别 ['DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL', 'CRITICAL']
-# LOG_LEVEL = 'DEBUG'
+LOG_LEVEL = 'INFO'
 
 # 日志存放的目录
 # LOG_DIR = os.path.join(BASE_DIR, 'logs')
