@@ -60,16 +60,17 @@ class SSHInterface(paramiko.ServerInterface):
             "login_type": 'ST'
         }
         logger.debug("Start check auth")
+        if not hasattr(g, 'user_service'):
+            logger.warning('g.user_service not exist. Reinit it')
+            g.user_service = UserService(self.app.endpoint)
         user, token = g.user_service.login(data)
         result = False
         if user:
             request.user = user
-            try:
-                g.user_service.auth(token=token)
-            except AttributeError:
+            if not hasattr(g, 'user_service'):
                 logger.warning('g.user_service is not found. Reinit it here. but why is lost, I dont knowK')
                 g.user_service = UserService(self.app.endpoint)
-                g.user_service.auth(token=token)
+            g.user_service.auth(token=token)
             result = True
         logger.debug("Finish check auth")
         return result
