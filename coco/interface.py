@@ -64,7 +64,12 @@ class SSHInterface(paramiko.ServerInterface):
         result = False
         if user:
             request.user = user
-            g.user_service.auth(token=token)
+            try:
+                g.user_service.auth(token=token)
+            except AttributeError:
+                logger.warning('g.user_service is not found. Reinit it here. but why is lost, I dont knowK')
+                g.user_service = UserService(self.app.endpoint)
+                g.user_service.auth(token=token)
             result = True
         logger.debug("Finish check auth")
         return result
