@@ -55,7 +55,8 @@ class InteractiveServer(object):
         7) 输入 \033[32mU/u\033[0m 批量上传文件.(未完成)\r
         8) 输入 \033[32mD/d\033[0m 批量下载文件.(未完成)\r
         9) 输入 \033[32mH/h\033[0m 帮助.\r
-        0) 输入 \033[32mQ/q\033[0m 退出.\r\n""" % request.user.username
+        0) 输入 \033[32mQ/q\033[0m 退出.\r
+        a) 输入 \033[32mD/d\033[0m 调试.\r\n""" % request.user.username
 
         g.client_channel.send(msg)
 
@@ -98,6 +99,12 @@ class InteractiveServer(object):
                     g.client_channel.send(data)
                     input_data.append(data)
 
+    def debug(self):
+        from IPython import embed
+        embed()
+        g.client_channel.send('ok')
+
+
     def dispatch(self, twice=False):
         """根据用户的输入执行不同的操作
         P, p: 打印用户所有资产
@@ -123,6 +130,8 @@ class InteractiveServer(object):
             sys.exit()
         elif option in ['h', 'H']:
             return self.display_banner()
+        elif option in ['d', 'D']:
+            return self.debug()
         else:
             return self.search_and_proxy(option=option, from_result=twice)
 

@@ -165,7 +165,7 @@ class Coco(object):
         while True:
             try:
                 client, addr = sock.accept()
-                logger.debug("Get request from %s:%s" % (addr[0], addr[1]))
+                logger.info("Get request from %s:%s" % (addr[0], addr[1]))
                 thread = threading.Thread(target=self.process_request,
                                           args=(client, addr))
                 thread.daemon = True

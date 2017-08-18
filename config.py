@@ -4,10 +4,10 @@ import os
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 # 项目名称, 会用来向Jumpserver注册
-NAME = 'coco'
+NAME = 'coco(tst)'
 
 # Jumpserver项目的url, api请求注册会使用
-JUMPSERVER_ENDPOINT = 'http://127.0.0.1:9043'
+JUMPSERVER_ENDPOINT = 'http://jms.flowself.com:9043'
 
 # 启动时绑定的ip, 默认 0.0.0.0
 # BIND_HOST = '0.0.0.0'
