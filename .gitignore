@@ -7,3 +7,5 @@ logs/*
 coco.iml
 .DS_Store
 env/
+jms/
+nohup.out
