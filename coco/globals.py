@@ -3,9 +3,12 @@
 # from flask.globals import request, g, _app_ctx_stack, \
 #     _request_ctx_stack, _lookup_req_object
 
-from functools import partial
-from werkzeug.local import LocalStack, LocalProxy
 import logging
+from functools import partial
+
+from werkzeug.local import LocalProxy, LocalStack
+
+log = logging.getLogger(__file__)
 
 _request_ctx_err_msg = '''\
 Working outside of request context.
@@ -52,4 +55,5 @@ current_app = LocalProxy(_find_app)
 request = LocalProxy(partial(_lookup_req_object, 'request'))
 session = LocalProxy(partial(_lookup_req_object, 'session'))
 g = LocalProxy(partial(_lookup_app_object, 'g'))
-logging.info('g 对象的当前地址：', id(g))
+
+log.info('g 对象的当前地址：', id(g))
