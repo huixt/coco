@@ -60,6 +60,7 @@ class SSHInterface(paramiko.ServerInterface):
             "login_type": 'ST'
         }
         logger.debug("Start check auth")
+        logger.warning('g addr: %s' % (id(g)))
         if not hasattr(g, 'user_service'):
             logger.warning('g.user_service not exist. Reinit it. g addr: %s' % (id(g)))
             g.user_service = UserService(self.app.endpoint)
