@@ -31,6 +31,7 @@ class SSHInterface(paramiko.ServerInterface):
         rc.push()
         request.change_win_size_event = threading.Event()
         g.user_service = UserService(self.app.endpoint)
+        logger.info('SSHInterface reinit, g.user_service is : %s', g.user_service)
 
     @classmethod
     def get_host_key(cls):
@@ -59,12 +60,13 @@ class SSHInterface(paramiko.ServerInterface):
             "public_key": public_key,
             "login_type": 'ST'
         }
-        logger.debug("Start check auth")
+        logger.info("Start check auth: %s", username)
         logger.warning('g addr: %s' % (id(g)))
         if not hasattr(g, 'user_service'):
             logger.warning('g.user_service not exist. Reinit it. g addr: %s' % (id(g)))
             g.user_service = UserService(self.app.endpoint)
         user, token = g.user_service.login(data)
+        logger.info('g.user_service.login result: %s', user)
         result = False
         if user:
             request.user = user
@@ -73,7 +75,7 @@ class SSHInterface(paramiko.ServerInterface):
                 g.user_service = UserService(self.app.endpoint)
             g.user_service.auth(token=token)
             result = True
-        logger.debug("Finish check auth")
+        logger.info("Finish check auth")
         return result
 
     def check_auth_password(self, username, password):

@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 #
+import logging
+
 from flask.ctx import RequestContext as RequestContextBase
+
 from .globals import _app_ctx_stack, _request_ctx_stack
 
-
+log = logging.getLogger(__name__)
 _sentinel = object()
 
 
@@ -18,7 +21,17 @@ class Request(object):
 
     def __init__(self, environ):
         self.environ = environ
-        self.user = None
+        self._user = None
+
+    @property
+    def user(self):
+        log.info('fetch Request user value: %s', self._user)
+        return self._user
+
+    @user.setter
+    def user(self, val):
+        log.info('set Request user value: %s', val)
+        self._user = val
 
 
 class _AppCtxGlobals(object):

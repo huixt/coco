@@ -18,14 +18,15 @@ from .utils import max_length, system_user_max_length
 
 logger = logging.getLogger(__file__)
 
-import gc
 
-
-def gc_cb(info, stat):
-    logger.info('gc collect | %s | %s', info, stat)
-
-
-gc.callbacks.append(gc_cb)
+# import gc
+#
+#
+# def gc_cb(info, stat):
+#     logger.info('gc collect | %s | %s', info, stat)
+#
+#
+# gc.callbacks.append(gc_cb)
 
 
 class InteractiveServer(object):
@@ -41,6 +42,7 @@ class InteractiveServer(object):
     BELL_CHAR = b'\x07'
 
     def __init__(self, app):
+        logger.info('reinit interactive server: %s', request.user)
         self.app = app
         self.service = app.service
         self.backend_server = None
