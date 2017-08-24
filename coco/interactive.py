@@ -2,20 +2,19 @@
 
 from __future__ import unicode_literals
 
-import sys
-import select
-import re
-import socket
-import threading
 import logging
+import re
+import select
+import socket
+import sys
+import threading
 
+from jms.utils import TtyIOParser, wrap_with_line_feed as wr, wrap_with_primary as primary, wrap_with_title as title, \
+    wrap_with_warning as warning
+
+from .globals import g, request
 from .proxy import ProxyServer
-from .globals import request, g
-from jms.utils import TtyIOParser
-from .utils import system_user_max_length, max_length
-from jms.utils import wrap_with_line_feed as wr, wrap_with_primary as primary,\
-    wrap_with_warning as warning, wrap_with_title as title
-
+from .utils import max_length, system_user_max_length
 
 logger = logging.getLogger(__file__)
 
@@ -104,7 +103,6 @@ class InteractiveServer(object):
         embed()
         g.client_channel.send('ok')
 
-
     def dispatch(self, twice=False):
         """根据用户的输入执行不同的操作
         P, p: 打印用户所有资产
@@ -155,12 +153,12 @@ class InteractiveServer(object):
                 self.search_result = id_search_result
             else:
                 self.search_result = [
-                    asset for asset in assets if option == asset.ip
-                ] or [asset for asset in assets
-                          if option in asset.ip or
-                             option in asset.hostname.lower() or
-                             option in asset.comment.lower()
-                ]
+                                         asset for asset in assets if option == asset.ip
+                                     ] or [asset for asset in assets
+                                           if option in asset.ip or
+                                           option in asset.hostname.lower() or
+                                           option in asset.comment.lower()
+                                           ]
         else:
             self.search_result = self.assets
 
@@ -207,7 +205,7 @@ class InteractiveServer(object):
             index = match.groups()[0]
             if index.isdigit() and len(self.asset_groups) > int(index):
                 asset_group = self.asset_groups[int(index)]
-                self.search_result = g.user_service.\
+                self.search_result = g.user_service. \
                     get_assets_in_group(asset_group.id)
                 self.display_search_result()
                 self.dispatch(twice=True)
@@ -223,8 +221,8 @@ class InteractiveServer(object):
 
         hostname_length = max_length([asset.hostname for asset in self.search_result])
         system_user_length = system_user_max_length(self.assets)
-        line = '[%-4s] %-16s %-5s %-' + str(hostname_length) + 's %-' + str(system_user_length+2) + 's '
-        comment_length = request.win_width-len(line % ((' ',) * 5)) - 5
+        line = '[%-4s] %-16s %-5s %-' + str(hostname_length) + 's %-' + str(system_user_length + 2) + 's '
+        comment_length = request.win_width - len(line % ((' ',) * 5)) - 5
         line += ('%-' + str(comment_length) + 's')
         g.client_channel.send(wr(title(line % (
             'ID', 'IP', 'Port', 'Hostname', 'Username', 'Comment'))))
@@ -232,7 +230,7 @@ class InteractiveServer(object):
         for index, asset in enumerate(self.search_result):
             system_users = '[' + ', '.join(
                 [system_user.username for system_user in asset.system_users]) \
-                + ']'
+                           + ']'
             g.client_channel.send(wr(
                 line % (index, asset.ip, asset.port, asset.hostname,
                         system_users, asset.comment)))
@@ -318,5 +316,3 @@ class InteractiveServer(object):
         #  api.finish_proxy_log(data)
         g.client_channel.close()
         del self
-
-
