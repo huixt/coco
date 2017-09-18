@@ -3,12 +3,9 @@
 # from flask.globals import request, g, _app_ctx_stack, \
 #     _request_ctx_stack, _lookup_req_object
 
-import logging
 from functools import partial
+from werkzeug.local import LocalStack, LocalProxy
 
-from werkzeug.local import LocalProxy, LocalStack
-
-log = logging.getLogger(__file__)
 
 _request_ctx_err_msg = '''\
 Working outside of request context.
@@ -34,13 +31,6 @@ def _lookup_req_object(name):
     return getattr(top, name)
 
 
-def _lookup_app_object(name):
-    top = _app_ctx_stack.top
-    if top is None:
-        raise RuntimeError(_app_ctx_err_msg)
-    return getattr(top, name)
-
-
 def _find_app():
     top = _app_ctx_stack.top
     if top is None:
@@ -54,6 +44,3 @@ _app_ctx_stack = LocalStack()
 current_app = LocalProxy(_find_app)
 request = LocalProxy(partial(_lookup_req_object, 'request'))
 session = LocalProxy(partial(_lookup_req_object, 'session'))
-g = LocalProxy(partial(_lookup_app_object, 'g'))
-
-log.info('g 对象的当前地址：%s', id(g))

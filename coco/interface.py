@@ -10,7 +10,7 @@ import logging
 from jms import UserService
 from . import PROJECT_DIR
 from .utils import ssh_key_gen
-from .globals import request, g
+from .globals import request
 
 
 logger = logging.getLogger(__file__)
@@ -30,8 +30,7 @@ class SSHInterface(paramiko.ServerInterface):
         self.rc = rc
         rc.push()
         request.change_win_size_event = threading.Event()
-        g.user_service = UserService(self.app.endpoint)
-        logger.info('SSHInterface reinit, g.user_service is : %s', g.user_service)
+        self.user_service = UserService(self.app.endpoint)
 
     @classmethod
     def get_host_key(cls):
@@ -60,22 +59,14 @@ class SSHInterface(paramiko.ServerInterface):
             "public_key": public_key,
             "login_type": 'ST'
         }
-        logger.info("Start check auth: %s", username)
-        logger.warning('g addr: %s' % (id(g)))
-        if not hasattr(g, 'user_service'):
-            logger.warning('g.user_service not exist. Reinit it. g addr: %s' % (id(g)))
-            g.user_service = UserService(self.app.endpoint)
-        user, token = g.user_service.login(data)
-        logger.info('g.user_service.login result: %s', user)
+        logger.debug("Start check auth")
+        user, token = self.user_service.login(data)
         result = False
         if user:
             request.user = user
-            if not hasattr(g, 'user_service'):
-                logger.warning('g.user_service is not found. Reinit it here. but why is lost, I dont knowK')
-                g.user_service = UserService(self.app.endpoint)
-            g.user_service.auth(token=token)
+            self.user_service.auth(token=token)
             result = True
-        logger.info("Finish check auth")
+        logger.debug("Finish check auth")
         return result
 
     def check_auth_password(self, username, password):

@@ -12,24 +12,24 @@
 """
 
 from __future__ import unicode_literals
-
-import logging
-import socket
 import sys
-import threading
 import time
+import threading
 import traceback
+import socket
+import logging
 
 import paramiko
-from jms.utils import wrap_with_line_feed as wr, wrap_with_warning as warning
 
 from . import __version__
-from .conf import ConfigAttribute, config
-from .ctx import AppContext, Request, RequestContext, _AppCtxGlobals
-from .globals import g, request
-from .interactive import InteractiveServer
+from .ctx import RequestContext, AppContext, Request, _AppCtxGlobals
+from .globals import request
 from .interface import SSHInterface
+from .interactive import InteractiveServer
+from .conf import ConfigAttribute, config
+from jms.utils import wrap_with_line_feed as wr, wrap_with_warning as warning
 from .service import service
+from .conf import config
 
 logger = logging.getLogger(__file__)
 
@@ -95,7 +95,6 @@ class Coco(object):
                     if tasks:
                         self.handle_task(tasks)
                 time.sleep(config.HEATBEAT_INTERVAL)
-
         thread = threading.Thread(target=_keep)
         thread.daemon = True
         thread.start()
@@ -124,34 +123,22 @@ class Coco(object):
             logger.warning('SSH negotiation failed.')
             sys.exit(1)
 
-        _client_channel = transport.accept(20)
-        g.client_channel = _client_channel
-        if _client_channel is None:
+        client_channel = transport.accept(20)
+        if client_channel is None:
             logger.warning('No ssh channel get.')
             sys.exit(1)
 
         if request.method == 'shell':
-            logger.info('Client asked for a shell. %s', request.user)
-            if request.user:  # 这个user是在哪里赋值的，晕！
-                InteractiveServer(self).run()
-            else:
-                _client_channel.send(wr(warning('auth error. ask Jian Dai to check server now.')))
-                _client_channel.close()
+            logger.info('Client asked for a shell.')
+            InteractiveServer(self, ssh_interface.user_service, client_channel).run()
         elif request.method == 'command':
-            _client_channel.send(wr(warning('We are not support command now')))
-            _client_channel.close()
+            client_channel.send(wr(warning('We are not support command now')))
+            client_channel.close()
             sys.exit(2)
         else:
-            _client_channel.send(wr(warning('Not support the request method')))
-            _client_channel.close()
+            client_channel.send(wr(warning('Not support the request method')))
+            client_channel.close()
             sys.exit(2)
-
-        while True:
-            if request.user is not None:
-                break
-            else:
-                logger.info("request.user is None now, but what's next?")
-                time.sleep(0.2)  # what this code fuck do?!
 
     def run_forever(self, **kwargs):
         self.bootstrap()
@@ -171,7 +158,7 @@ class Coco(object):
         while True:
             try:
                 client, addr = sock.accept()
-                logger.info("Get request from %s:%s" % (addr[0], addr[1]))
+                logger.debug("Get request from %s:%s" % (addr[0], addr[1]))
                 thread = threading.Thread(target=self.process_request,
                                           args=(client, addr))
                 thread.daemon = True
